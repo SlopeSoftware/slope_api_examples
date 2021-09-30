@@ -1,2 +1,2 @@
-# slope_api_examples
-Slope Public API example code.
+# Slope API Examples
+This repository contains examples of using the Slope API in different programming languages.
