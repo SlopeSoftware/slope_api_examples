@@ -93,11 +93,7 @@ class SlopeApi:
     def is_projection_running(self, projection_id) -> bool:
         response = self.session.get(f"{self.api_url}/Projections/{projection_id}")
         if response.ok:
-            status = response.json()["status"]
-            if status in ["Completed", "CompletedWithErrors", "ErrorLimitReached", "Cancelled", "FailedToStart", "ValidationFailed", "NotStarted"]:
-                return False
-            else:
-                return True
+            return response.json()["isRunning"]
         else:
             return False
     
