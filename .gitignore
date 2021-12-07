@@ -547,6 +547,8 @@ obj/
 .idea/**/dbnavigator.xml
 
 # Gradle
+.gradle
+!gradle/wrapper/gradle-wrapper.jar
 .idea/**/gradle.xml
 .idea/**/libraries
 
@@ -629,6 +631,9 @@ fabric.properties
 ### Java ###
 # Compiled class file
 *.class
+build/
+!**/src/main/**/build/
+!**/src/test/**/build/
 
 # Log file
 
