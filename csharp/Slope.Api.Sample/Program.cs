@@ -3,8 +3,8 @@
 using Slope.Api.Sample;
 
 // Substitute Real API credentials here
-const string apiKey = "";
-const string apiSecret = "";
+const string apiKey = "990f3347-e5f6-4a55-ab8e-486131e92f77";
+const string apiSecret = "b10823cc-2f0b-4788-a82e-3598c6cd6ef5";
 
 const int modelId = 9999;  // The ID of the model to be run
 const int reportId = 9999;  // The ID of the Look report to download
@@ -51,10 +51,10 @@ var data_table_parameters =
     "excelSheetName": data_table_file_excel_sheet_name
 };
 var dataTableId = apiClient.CreateDataTable(dataTableFilePath, data_table_parameters);
-
-// Upload New Inforce Files
-var modelPointFileId = apiClient.UploadFile(modelPointFilePath, f"Inforce/Inforce File - {valuation_date_string}.csv");
 */
+// Upload New Inforce Files
+Console.WriteLine("Uploading Inforce File");
+var modelPointFileId = await apiClient.UploadFileAsync(modelPointFilePath, $"Inforce/Inforce File - {valuationDate:yyyy-MM}.csv");
 
 // Create Projection from Template
 Console.WriteLine("Creating Projection");

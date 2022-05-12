@@ -6,7 +6,7 @@ namespace Slope.Api.Sample;
 
 public class SlopeApi
 {
-    private const string ApiUrl = "https://api.slopesoftware.com";
+    private const string ApiUrl = "https://test-api.slopesoftware.com";
     private const string ApiVersion = "v1";
 
     private readonly HttpClient _httpClient;
@@ -42,30 +42,42 @@ public class SlopeApi
     private record AuthorizeResponse(string accessToken);
     public async Task AuthorizeAsync(string apiKey, string apiSecretKey)
     {
-        var loginParams = new AuthorizeRequest(apiKey, apiSecretKey);
-        var response = await PostAsync<AuthorizeRequest, AuthorizeResponse>(loginParams, $"/api/{ApiVersion}/Authorize");
+        var loginRequest = new AuthorizeRequest(apiKey, apiSecretKey);
+        var response = await PostAsync<AuthorizeRequest, AuthorizeResponse>(loginRequest, $"/api/{ApiVersion}/Authorize");
         
         _httpClient.DefaultRequestHeaders.Accept.Clear();
         _httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
         _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", response.accessToken);
     }
 
-    /*
-    public async Task<int> UploadFileAsync(string fileName, string slopePath)
+
+    private record GetUploadUrlRequest(string filePath);
+    private record GetUploadUrlResponse(string uploadUrl);
+    private record SaveUploadRequest(string filePath);
+    private record SaveUploadResponse(int fileId);
+    public async Task<int> UploadFileAsync(string filePath, string slopePath)
     {
-        var slope_file_params = {"filePath": slope_path}
-        var response = self.session.post(f"{self.api_url}/Files/GetUploadUrl", json=slope_file_params)
-        uploadUrl = response.json()["uploadUrl"]
-        
-        // Note - Do not use session here - this is a direct call to s3 and does not use the session auth
-        var response = requests.put(uploadUrl, data=open(filename, "rb"))
-        await CheckResponseAsync(response);
+        // Get a temporary direct upload url
+        var urlRequest = new GetUploadUrlRequest(slopePath);
+        var urlResponse = await PostAsync<GetUploadUrlRequest, GetUploadUrlResponse>(urlRequest, $"/api/{ApiVersion}/Files/GetUploadUrl");
 
-        var response = self.session.post(f"{self.api_url}/Files/SaveUpload", json=slope_file_params)
-        await CheckResponseAsync(response);
-        return response.json()["fileId"]
+        // Upload file directly to S3
+        // Note: Do not use session here - this is a direct call to S3 and does not use the session auth
+        using var fileHttpClient = new HttpClient();
+        using var multipartFormContent = new MultipartFormDataContent();
+        var fileStreamContent = new StreamContent(File.OpenRead(filePath));
+        //fileStreamContent.Headers.ContentType = new MediaTypeHeaderValue("text/csv");
+        multipartFormContent.Add(fileStreamContent);
+
+        var fileResponse = await fileHttpClient.PutAsync(urlResponse.uploadUrl, multipartFormContent);
+        await CheckResponseAsync(fileResponse);
+
+        // Tell SLOPE we are done uploading
+        var saveRequest = new SaveUploadRequest(slopePath);
+        var saveResponse = await PostAsync<SaveUploadRequest, SaveUploadResponse>(saveRequest, $"/api/{ApiVersion}/Files/SaveUpload");
+        return saveResponse.fileId;
     }
-
+/*
     public async Task CreateDataTable(string fileName, slopeTableParams)
     {
         self.upload_file(filename, slope_table_params["filePath"])
