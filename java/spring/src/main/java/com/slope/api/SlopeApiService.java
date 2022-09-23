@@ -124,7 +124,7 @@ public class SlopeApiService {
         return new ProcessedRequestResult<>(saveFileUploadResult, new UploadFileResponse(fileId));
     }
 
-    record CreateDataTableRequest(int tableStructureId, String description, String filePath, String excelSheetName){}
+    record CreateDataTableRequest(int tableStructureId, String name, String filePath, String excelSheetName){}
     record CreateDataTableResponse(int dataTableId){}
     public ProcessedRequestResult<CreateDataTableResponse> createDataTable(String filePath, CreateDataTableParameters parameters) {
         var uploadFileResult = uploadFile(filePath, parameters.slopeFilePath());
@@ -134,7 +134,7 @@ public class SlopeApiService {
 
         var result = webClient.post()
                 .uri("/DataTables")
-                .body(Mono.just(new CreateDataTableRequest(parameters.tableStructureId(), parameters.description(), parameters.slopeFilePath(), parameters.excelSheetName())),
+                .body(Mono.just(new CreateDataTableRequest(parameters.tableStructureId(), parameters.name(), parameters.slopeFilePath(), parameters.excelSheetName())),
                         CreateDataTableRequest.class)
                 .exchangeToMono(RequestResult::FromClientResponse)
                 .block();

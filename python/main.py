@@ -46,7 +46,7 @@ def run():
     # Update Assumptions
     data_table_parameters = {
         "tableStructureId": table_structure_id,
-        "description": f"Assumptions {valuation_date_string}",
+        "name": f"Assumptions {valuation_date_string}",
         "filePath": f"Assumptions/Assumption Update {valuation_date_string}.xlsx",
         "excelSheetName": data_table_file_excel_sheet_name
     }
