@@ -95,13 +95,13 @@ Console.WriteLine($"Projection finished with status: {status}");
 // Download results only if the projection finished running
 if (status is "Completed" or "CompletedWithErrors")
 {
-    Console.WriteLine("Saving Look report in Excel format");
+    Console.WriteLine("Saving Workbook element in Excel format");
     await apiClient.DownloadReportAsync(projectionId, wokrbookId, elementId, reportDownloadFilePathExcel, "Excel", new Dictionary<string, string>
     {
         {"Time", "0"}
     });
 
-    Console.WriteLine("Saving Look report in CSV format");
+    Console.WriteLine("Saving Workbook element in CSV format");
     await apiClient.DownloadReportAsync(projectionId, wokrbookId, elementId, reportDownloadFilePathCsv, "Csv", new Dictionary<string, string>
     {
         {"Time", "0"}
