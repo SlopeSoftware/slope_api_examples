@@ -7,7 +7,8 @@ api_key = ""
 api_secret = ""
 
 model_id = 9999  # The ID of the model to be run
-report_id = 9999  # The ID of the Look report to download
+workbook_id = "5rMaW9R0yVoehrIjyAUtew"  # The ID of the workbook with the element to download
+element_id = "SQ_fXFwL0L"  # The ID of the element in the workbook to download
 template_id = 9999  # The ID of the Projection Template to be run
 
 table_structure_id = 9999  # The ID of the table structure of the data table to create
@@ -101,8 +102,8 @@ def run():
 
     # Download Results
     if status in ["Completed", "CompletedWithErrors"]:
-        api_client.download_report(report_id, report_download_file_path_excel, "Excel", {"Projection ID": f"{projection_id}"})
-        api_client.download_report(report_id, report_download_file_path_csv, "Csv", {"Projection ID": f"{projection_id}"})
+        api_client.download_report(workbook_id, element_id, report_download_file_path_excel, "Excel", {"Projection-ID": f"{projection_id}"})
+        api_client.download_report(workbook_id, element_id, report_download_file_path_csv, "Csv", {"Projection-ID": f"{projection_id}"})
 
 
 if __name__ == "__main__":

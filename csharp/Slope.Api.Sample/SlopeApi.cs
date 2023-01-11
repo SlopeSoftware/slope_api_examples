@@ -183,15 +183,15 @@ public class SlopeApi
         return response.status;
     }
 
-    public record DownloadReportRequest(string reportFormat, Dictionary<string, string> filters);
-    public async Task DownloadReportAsync(int projectionId, int lookId, string fileName, string reportFormat, Dictionary<string, string>? filters = null)
+    public record DownloadReportRequest(string elementId, string reportFormat, Dictionary<string, string> parameters);
+    public async Task DownloadReportAsync(int projectionId, string workbookId, string elementId, string fileName, string reportFormat, Dictionary<string, string>? parameters = null)
     {
-        var finalFilters = new Dictionary<string, string>(filters ?? new Dictionary<string, string>());
-        finalFilters.TryAdd("Projection ID", projectionId.ToString());
+        var finalParameters = new Dictionary<string, string>(parameters ?? new Dictionary<string, string>());
+        finalParameters.TryAdd("Projection-ID", projectionId.ToString());
         
-        var request = new DownloadReportRequest(reportFormat, finalFilters);
+        var request = new DownloadReportRequest(elementId, reportFormat, finalParameters);
         var content = new StringContent(JsonSerializer.Serialize(request), Encoding.UTF8, "application/json");
-        var response = await _httpClient.PostAsync($"/api/{ApiVersion}/Reports/Looks/{lookId}", content);
+        var response = await _httpClient.PostAsync($"/api/{ApiVersion}/Reports/Workbooks/{workbookId}", content);
         await CheckResponseAsync(response);
 
         await using (var file = File.OpenWrite(fileName))

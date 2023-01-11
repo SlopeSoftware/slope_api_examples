@@ -7,7 +7,8 @@ const string apiKey = "<API KEY HERE>";
 const string apiSecret = "<API SECRET HERE>";
 
 const int modelId = 99999;  // The ID of the model to be run
-const int lookId = 999;  // The ID of the Look report to download
+const string workbookId = "5rMaW9R0yVoehrIjyAUtew";  // The ID of the workbook with the element to download
+const string elementId = "SQ_fXFwL0L";  // The ID of the element in the workbook to download
 const int templateId = 99999;  // The ID of the Projection Template to be run
 
 const int tableStructureId = 999999;  // The ID of the table structure of the data table to create
@@ -94,14 +95,14 @@ Console.WriteLine($"Projection finished with status: {status}");
 // Download results only if the projection finished running
 if (status is "Completed" or "CompletedWithErrors")
 {
-    Console.WriteLine("Saving Look report in Excel format");
-    await apiClient.DownloadReportAsync(projectionId, lookId, reportDownloadFilePathExcel, "Excel", new Dictionary<string, string>
+    Console.WriteLine("Saving Workbook element in Excel format");
+    await apiClient.DownloadReportAsync(projectionId, workbookId, elementId, reportDownloadFilePathExcel, "Excel", new Dictionary<string, string>
     {
         {"Time", "0"}
     });
 
-    Console.WriteLine("Saving Look report in CSV format");
-    await apiClient.DownloadReportAsync(projectionId, lookId, reportDownloadFilePathCsv, "Csv", new Dictionary<string, string>
+    Console.WriteLine("Saving Workbook element in CSV format");
+    await apiClient.DownloadReportAsync(projectionId, workbookId, elementId, reportDownloadFilePathCsv, "Csv", new Dictionary<string, string>
     {
         {"Time", "0"}
     });

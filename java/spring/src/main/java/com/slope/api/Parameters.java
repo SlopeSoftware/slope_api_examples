@@ -10,7 +10,8 @@ public class Parameters {
     public static final String apiSecretKey = "";
 
     public static final int ModelId = 9999;  // The ID of the model to be run
-    public static final int ReportId = 9999;  // The ID of the Look report to download
+    public static final String WorkbookId = "5rMaW9R0yVoehrIjyAUtew";  // The ID of the workbook with the element to download
+    public static final String ElementId = "SQ_fXFwL0L";  // The ID of the element in the workbook to download
     public static final int TemplateId = 9999;  // The ID of the Projection Template to be run
 
     public static final int TableStructureId = 9999;  // The ID of the table structure of the data table to create

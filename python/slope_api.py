@@ -102,12 +102,13 @@ class SlopeApi:
         self.check_response(response)
         return response.json()["status"]
     
-    def download_report(self, look_id, filename, format_type, filters):
+    def download_report(self, workbook_id, element_id, filename, format_type, parameters):
         report_params = {
+            "elementId": element_id,
             "reportFormat": format_type,
-            "filters": filters
+            "parameters": parameters
         }
-        response = self.session.post(f"{self.api_url}/Reports/Looks/{look_id}", json=report_params)
+        response = self.session.post(f"{self.api_url}/Reports/Workbooks/{workbook_id}", json=report_params)
         self.check_response(response)
         file = open(filename, "wb")
         file.write(response.content)

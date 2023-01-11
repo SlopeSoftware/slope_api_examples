@@ -274,11 +274,11 @@ public class SlopeApiService {
         return new ProcessedRequestResult<>(result, new RunProjectionResponse());
     }
 
-    record DownloadReportRequest(String reportFormat, Map<String, String> filters){}
-    public ProcessedRequestBinaryResult<byte[]> downloadReport(int lookId, String reportFormatType, Map<String, String> filters) {
+    record DownloadReportRequest(String elementId, String reportFormat, Map<String, String> parameters){}
+    public ProcessedRequestBinaryResult<byte[]> downloadReport(String workbookId, String elementId, String reportFormatType, Map<String, String> parameters) {
         var result = webClient.post()
-                .uri("/Reports/Looks/" + lookId)
-                .body(Mono.just(new DownloadReportRequest(reportFormatType, filters)), DownloadReportRequest.class)
+                .uri("/Reports/Workbooks/" + workbookId)
+                .body(Mono.just(new DownloadReportRequest(elementId, reportFormatType, parameters)), DownloadReportRequest.class)
                 .exchangeToMono(RequestBinaryResult::FromClientResponse)
                 .block();
 
