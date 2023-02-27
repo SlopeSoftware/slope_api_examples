@@ -52,14 +52,8 @@ public class SlopeApi
         // Upload file directly to S3
         // Note: Do not use session here - this is a direct call to S3 and does not use the session auth
         using var fileHttpClient = new HttpClient();
-        using var multipartFormContent = new MultipartFormDataContent();
-        var fileStreamContent = new StreamContent(File.OpenRead(filePath));
-        multipartFormContent.Add(fileStreamContent);
         
-        // Set content type to null to prevent S3 from validating the file type
-        multipartFormContent.Headers.ContentType = null;
-        
-        var fileResponse = await fileHttpClient.PutAsync(urlResponse.uploadUrl, multipartFormContent);
+        var fileResponse = await fileHttpClient.PutAsync(urlResponse.uploadUrl, new StreamContent(File.OpenRead(filePath)));
         await CheckResponseAsync(fileResponse);
 
         // Tell SLOPE we are done uploading
