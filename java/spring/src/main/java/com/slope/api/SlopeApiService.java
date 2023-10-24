@@ -1,5 +1,6 @@
 package com.slope.api;
 
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -11,6 +12,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 
 public class SlopeApiService {
@@ -146,6 +148,17 @@ public class SlopeApiService {
 
         var dataTableId = Integer.parseInt(String.valueOf(result.parsedJsonResponse().get("id")));
         return new ProcessedRequestResult<>(result, new CreateDataTableResponse(dataTableId));
+    }
+
+    record ListDataTablesResponse(int id, String name){}
+    public List<ListDataTablesResponse> listDataTables(int modelId) {
+        Mono<List<ListDataTablesResponse>> response = webClient.get()
+          .uri("/DataTables/List/" + modelId)
+          .accept(MediaType.APPLICATION_JSON)
+          .retrieve()
+          .bodyToMono(new ParameterizedTypeReference<>() {});
+
+        return response.block();
     }
 
     record CreateScenarioTableRequest(int modelId, String description, String startDate, String yieldCurveRateType, String filePath, String delimiter){}
