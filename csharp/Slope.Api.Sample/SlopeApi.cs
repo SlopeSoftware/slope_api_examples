@@ -81,6 +81,12 @@ public class SlopeApi
         return response.id;
     }
     
+    public record ListDataTablesResponse(int id, string name);
+    public async Task<ICollection<ListDataTablesResponse>> ListDataTablesAsync(int modelId)
+    {
+        return await GetAsync<ICollection<ListDataTablesResponse>>($"/api/{ApiVersion}/DataTables/List/{modelId}");
+    }
+
     private record CreateScenarioTableRequest(int modelId,
         string name,
         string startDate,
