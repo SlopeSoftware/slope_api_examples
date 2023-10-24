@@ -56,7 +56,7 @@ def run():
     data_tables = api_client.list_data_tables(model_id)
     print("Listing Data Tables")
     for d in data_tables:
-        print(f"Id {d['id']}, Name {d['name']}")
+        print(f"Id: {d['id']}, Name: {d['name']}")
 
     # Upload New Inforce Files
     model_point_file_id = api_client.upload_file(model_point_file_path, f"Inforce/Inforce File - {valuation_date_string}.csv")
