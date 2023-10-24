@@ -3,7 +3,7 @@
 const string rootPath = @"C:\Files\";
 
 // Substitute Real API credentials here
-/*const string apiKey = "<API KEY HERE>";
+const string apiKey = "<API KEY HERE>";
 const string apiSecret = "<API SECRET HERE>";
 
 const int modelId = 99999;  // The ID of the model to be run
@@ -11,17 +11,7 @@ const string workbookId = "5rMaW9R0yVoehrIjyAUtew";  // The ID of the workbook w
 const string elementId = "SQ_fXFwL0L";  // The ID of the element in the workbook to download
 const int templateId = 99999;  // The ID of the Projection Template to be run
 
-const int tableStructureId = 999999;  // The ID of the table structure of the data table to create*/
-const string apiKey = "896ff82a-de51-4911-9643-da8ff55ffa60";
-const string apiSecret = "dd2e2f78-0ea0-4d0e-9912-353b1d66463d";
-
-const int modelId = 80205;  // The ID of the model to be run
-const string workbookId = "5rMaW9R0yVoehrIjyAUtew";  // The ID of the workbook with the element to download
-const string elementId = "SQ_fXFwL0L";  // The ID of the element in the workbook to download
-const int templateId = 99999;  // The ID of the Projection Template to be run
-
-const int tableStructureId = 142631;  // The ID of the table structure of the data table to create
-
+const int tableStructureId = 999999;  // The ID of the table structure of the data table to create
 const string dataTableFilePath = $"{rootPath}Assumption Update.xlsx";
 const string dataTableFileExcelSheetName = "Assumptions";
 const string dataTableName = "Data Table Name";
