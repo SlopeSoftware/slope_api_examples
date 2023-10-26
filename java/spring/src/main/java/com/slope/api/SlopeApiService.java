@@ -150,6 +150,17 @@ public class SlopeApiService {
         return new ProcessedRequestResult<>(result, new CreateDataTableResponse(dataTableId));
     }
 
+    record ListTableStructureResponse(int id, String name, String descritpion){}
+    public List<ListTableStructureResponse> listTableStructures(int modelId) {
+        Mono<List<ListTableStructureResponse>> response = webClient.get()
+            .uri("/TableStructures/List/" + modelId)
+            .accept(MediaType.APPLICATION_JSON)
+            .retrieve()
+            .bodyToMono(new ParameterizedTypeReference<>() {});
+
+        return response.block();
+    }
+
     record ListDataTablesResponse(int id, String name){}
     public List<ListDataTablesResponse> listDataTables(int modelId) {
         Mono<List<ListDataTablesResponse>> response = webClient.get()

@@ -44,7 +44,13 @@ def run():
     }
     scenario_table_id = api_client.create_scenario_table(scenario_table_file_path, scenario_table_parameters)
 
+
     # Update Assumptions
+    table_structures = api_client.list_table_structures(model_id)
+    print("Listing Table Structures")
+    for d in table_structures:
+        print(f"Id: {d['id']}, Name: {d['name']}, Description: {d['description']}")
+
     data_table_parameters = {
         "tableStructureId": table_structure_id,
         "name": f"Assumptions {valuation_date_string}",

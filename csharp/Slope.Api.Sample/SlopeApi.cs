@@ -62,6 +62,12 @@ public class SlopeApi
         return saveResponse.fileId;
     }
     
+    public record ListTableStructuresResponse(int id, string name, string description);
+    public async Task<ICollection<ListTableStructuresResponse>> ListTableStructuresAsync(int modelId)
+    {
+        return await GetAsync<ICollection<ListTableStructuresResponse>>($"/api/{ApiVersion}/TableStructures/List/{modelId}");
+    }
+
     private record CreateDataTableRequest(int tableStructureId,
         string name,
         int? fileId,

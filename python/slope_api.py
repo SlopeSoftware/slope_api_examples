@@ -6,6 +6,7 @@ class SlopeApi:
 
     def __init__(self):
         self.session = requests.Session()
+        self.session.verify = False
         self.session.headers.update({"Content-type": "application/json"})
 
     @staticmethod
@@ -37,7 +38,12 @@ class SlopeApi:
         response = self.session.post(f"{self.api_url}/Files/SaveUpload", json=slope_file_params)
         self.check_response(response)
         return response.json()["fileId"]
-        
+
+    def list_table_structures(self, model_id: int) -> any:
+        response = self.session.get(f"{self.api_url}/TableStructures/List/{model_id}")
+        self.check_response(response)
+        return response.json()
+
     def create_data_table(self, filename: str, slope_table_params) -> int:
         self.upload_file(filename, slope_table_params["filePath"])
         response = self.session.post(f"{self.api_url}/DataTables", json=slope_table_params)

@@ -40,6 +40,12 @@ public class SlopeApiApplication implements CommandLineRunner {
                         "Scenario Files/Scenario.csv",
                         ",")).payload().ScenarioTableId();
 
+        var tableStructures = api.listTableStructures(Parameters.ModelId);
+        LOG.info("Listing Table Structures");
+        tableStructures.forEach(tableStructure -> {
+            LOG.info(MessageFormat.format("Id: {0}, Name: {1}, Description: {2}", tableStructure.id(), tableStructure.name(), tableStructure.descritpion()));
+        });
+
         var dataTableId = api.createDataTable(Parameters.DataTableFilePath,
                 new CreateDataTableParameters(
                         Parameters.TableStructureId,
