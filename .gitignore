@@ -546,12 +546,6 @@ obj/
 .idea/**/uiDesigner.xml
 .idea/**/dbnavigator.xml
 
-# Gradle
-.gradle
-!gradle/wrapper/gradle-wrapper.jar
-.idea/**/gradle.xml
-.idea/**/libraries
-
 # Gradle and Maven with auto-import
 # When using Gradle or Maven with auto-import, you should exclude module files,
 # since they will be recreated, and may cause churn.  Uncomment if using
@@ -697,6 +691,13 @@ Icon
 Network Trash Folder
 Temporary Items
 .apdisk
+
+# Gradle
+# needs to be AFTER *.jar to honor the '!' exclusions for .jar files
+.gradle
+!gradle-wrapper.jar
+.idea/**/gradle.xml
+.idea/**/libraries
 
 ### Maven ###
 target/

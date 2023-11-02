@@ -40,12 +40,26 @@ var scenarioFileId = await apiClient.UploadFileAsync(scenarioTableFilePath, $"Sc
 Console.WriteLine("Uploading Inforce File");
 var modelPointFileId = await apiClient.UploadFileAsync(modelPointFilePath, $"Inforce/Inforce File - {valuationDate:yyyy-MM}.csv");
 
+Console.WriteLine("Listing Table Structures");
+var tableStructures = await apiClient.ListTableStructuresAsync(modelId);
+foreach(var tableStructure in tableStructures)
+{
+    Console.WriteLine($"Id: {tableStructure.id}, Name: {tableStructure.name}, Description: {tableStructure.description}");
+}
 
 Console.WriteLine("Creating Data Table");
 var dataTableId = await apiClient.CreateDataTableAsync(tableStructureId,
     dataTableName,
     fileId: dataTableFileId,
     excelSheetName: dataTableFileExcelSheetName);
+
+Console.WriteLine("Listing Data Tables");
+var dataTables = await apiClient.ListDataTablesAsync(modelId);
+foreach(var dataTable in dataTables)
+{
+    Console.WriteLine($"Id: {dataTable.id}, Name: {dataTable.name}");
+}
+
 
 Console.WriteLine("Creating Scenario Table");
 var scenarioTableId = await apiClient.CreateScenarioTableAsync(modelId, 

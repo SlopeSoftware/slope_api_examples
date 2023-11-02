@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
+import java.text.MessageFormat;
 import java.util.Map;
 
 @SpringBootApplication
@@ -39,12 +40,24 @@ public class SlopeApiApplication implements CommandLineRunner {
                         "Scenario Files/Scenario.csv",
                         ",")).payload().ScenarioTableId();
 
+        var tableStructures = api.listTableStructures(Parameters.ModelId);
+        LOG.info("Listing Table Structures");
+        tableStructures.forEach(tableStructure -> {
+            LOG.info(MessageFormat.format("Id: {0}, Name: {1}, Description: {2}", tableStructure.id(), tableStructure.name(), tableStructure.descritpion()));
+        });
+
         var dataTableId = api.createDataTable(Parameters.DataTableFilePath,
                 new CreateDataTableParameters(
                         Parameters.TableStructureId,
                         "Assumptions " + Parameters.ValuationDateString,
                         "Assumptions/Assumption Update " + Parameters.ValuationDateString + ".xlsx",
                         Parameters.DataTableFileExcelSheetName)).payload().dataTableId();
+
+        var dataTables = api.listDataTables(Parameters.ModelId);
+        LOG.info("Listing Data Tables");
+        dataTables.forEach(dataTable -> {
+            LOG.info(MessageFormat.format("Id: {0}, Name: {1}", dataTable.id(), dataTable.name()));
+        });
 
         var modelPointFileId = api.uploadFile(Parameters.ModelPointFilePath, "Inforce/Inforce.csv")
                 .payload().fileId();

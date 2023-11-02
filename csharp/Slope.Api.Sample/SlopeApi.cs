@@ -62,6 +62,12 @@ public class SlopeApi
         return saveResponse.fileId;
     }
     
+    public record ListTableStructuresResponse(int id, string name, string description);
+    public async Task<ICollection<ListTableStructuresResponse>> ListTableStructuresAsync(int modelId)
+    {
+        return await GetAsync<ICollection<ListTableStructuresResponse>>($"/api/{ApiVersion}/TableStructures/List/{modelId}");
+    }
+
     private record CreateDataTableRequest(int tableStructureId,
         string name,
         int? fileId,
@@ -81,6 +87,12 @@ public class SlopeApi
         return response.id;
     }
     
+    public record ListDataTablesResponse(int id, string name);
+    public async Task<ICollection<ListDataTablesResponse>> ListDataTablesAsync(int modelId)
+    {
+        return await GetAsync<ICollection<ListDataTablesResponse>>($"/api/{ApiVersion}/DataTables/List/{modelId}");
+    }
+
     private record CreateScenarioTableRequest(int modelId,
         string name,
         string startDate,
