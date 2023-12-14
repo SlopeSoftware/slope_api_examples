@@ -64,6 +64,8 @@ def run():
     for d in data_tables:
         print(f"Id: {d['id']}, Name: {d['name']}")
 
+    data_table_id = api_client.update_data_table(data_table_file_path, data_table_parameters)
+    
     # Upload New Inforce Files
     model_point_file_id = api_client.upload_file(model_point_file_path, f"Inforce/Inforce File - {valuation_date_string}.csv")
 
