@@ -2,7 +2,7 @@
 
 const string rootPath = @"C:\Files\";
 
- //Substitute Real API credentials here
+// Substitute Real API credentials here
 const string apiKey = "<API KEY HERE>";
 const string apiSecret = "<API SECRET HERE>";
 
