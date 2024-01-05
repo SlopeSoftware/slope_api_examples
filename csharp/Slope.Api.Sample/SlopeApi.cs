@@ -87,6 +87,29 @@ public class SlopeApi
         return response.id;
     }
     
+    private record UpdateDataTableRequest(
+        int? dataTableId,
+        int? tableStructureId,
+        string? name,
+        int? fileId,
+        string? filePath,
+        string? excelSheetName,
+        string? delimiter);
+    private record UpdateDataTableResponse(int id);
+    public async Task<int> UpdateDataTableAsync(
+        int? dataTableId = null,
+        int? tableStructureId = null,
+        string? name = null,
+        int? fileId = null,
+        string? slopePath = null,
+        string? excelSheetName = null,
+        string delimiter = ",")
+    {
+        var request = new UpdateDataTableRequest(dataTableId, tableStructureId, name, fileId, slopePath, excelSheetName, delimiter);
+        var response = await PatchAsync<UpdateDataTableRequest, UpdateDataTableResponse>(request, $"/api/{ApiVersion}/DataTables");
+        return response.id;
+    }
+
     public record ListDataTablesResponse(int id, string name);
     public async Task<ICollection<ListDataTablesResponse>> ListDataTablesAsync(int modelId)
     {
@@ -254,6 +277,16 @@ public class SlopeApi
         await CheckResponseAsync(response);
     }
     
+    private async Task<TResponse> PatchAsync<TRequest, TResponse>(TRequest request, string url)
+    {
+        var content = new StringContent(JsonSerializer.Serialize(request), Encoding.UTF8, "application/json");
+        var response = await _httpClient.PatchAsync(url, content);
+        await CheckResponseAsync(response);
+
+        var responseJson = await response.Content.ReadAsStringAsync();
+        return DeserializeJsonOrThrow<TResponse>(responseJson, url);
+    }
+
     private TResponse DeserializeJsonOrThrow<TResponse>(string json, string url) =>
         JsonSerializer.Deserialize<TResponse>(json) ?? throw new Exception("Invalid JSON from endpoint: " + url);
 }

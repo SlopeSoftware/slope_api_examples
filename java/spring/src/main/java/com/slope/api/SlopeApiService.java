@@ -149,7 +149,31 @@ public class SlopeApiService {
         var dataTableId = Integer.parseInt(String.valueOf(result.parsedJsonResponse().get("id")));
         return new ProcessedRequestResult<>(result, new CreateDataTableResponse(dataTableId));
     }
+    
+    record UpdateDataTableRequest(int tableStructureId, String name, String filePath, String excelSheetName){}
+    record UpdateDataTableResponse(int dataTableId){}
+    public ProcessedRequestResult<UpdateDataTableResponse> updateDataTable(String filePath, UpdateDataTableParameters parameters) {
+        var uploadFileResult = uploadFile(filePath, parameters.slopeFilePath());
+        if (uploadFileResult.requestResult().hasError()) {
+            return new ProcessedRequestResult<>(uploadFileResult.requestResult(), null);
+        }
 
+        var result = webClient.patch()
+                .uri("/DataTables")
+                .body(Mono.just(new UpdateDataTableRequest(parameters.tableStructureId(), parameters.name(), parameters.slopeFilePath(), parameters.excelSheetName())),
+                      UpdateDataTableRequest.class)
+                .exchangeToMono(RequestResult::FromClientResponse)
+                .block();
+
+        if (result == null || result.hasError() || !result.parsedJsonResponse().containsKey("id"))
+        {
+            return new ProcessedRequestResult<>(result, null);
+        }
+
+        var dataTableId = Integer.parseInt(String.valueOf(result.parsedJsonResponse().get("id")));
+        return new ProcessedRequestResult<>(result, new UpdateDataTableResponse(dataTableId));
+    }
+    
     record ListTableStructureResponse(int id, String name, String descritpion){}
     public List<ListTableStructureResponse> listTableStructures(int modelId) {
         Mono<List<ListTableStructureResponse>> response = webClient.get()

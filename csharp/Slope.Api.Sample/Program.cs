@@ -60,6 +60,13 @@ foreach(var dataTable in dataTables)
     Console.WriteLine($"Id: {dataTable.id}, Name: {dataTable.name}");
 }
 
+Console.WriteLine("Updating Data Table");
+dataTableId = await apiClient.UpdateDataTableAsync(
+    name: dataTableName,
+    tableStructureId: tableStructureId,
+    fileId: dataTableFileId,
+    excelSheetName: dataTableFileExcelSheetName);
+
 
 Console.WriteLine("Creating Scenario Table");
 var scenarioTableId = await apiClient.CreateScenarioTableAsync(modelId, 

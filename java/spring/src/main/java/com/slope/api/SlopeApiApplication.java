@@ -59,6 +59,13 @@ public class SlopeApiApplication implements CommandLineRunner {
             LOG.info(MessageFormat.format("Id: {0}, Name: {1}", dataTable.id(), dataTable.name()));
         });
 
+        dataTableId = api.updateDataTable(Parameters.DataTableFilePath,
+                  new UpdateDataTableParameters(
+                          Parameters.TableStructureId,
+                          "Assumptions " + Parameters.ValuationDateString,
+                          "Assumptions/Assumption Update " + Parameters.ValuationDateString + ".xlsx",
+                          Parameters.DataTableFileExcelSheetName)).payload().dataTableId();
+
         var modelPointFileId = api.uploadFile(Parameters.ModelPointFilePath, "Inforce/Inforce.csv")
                 .payload().fileId();
 
