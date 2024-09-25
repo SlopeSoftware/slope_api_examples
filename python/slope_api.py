@@ -115,7 +115,7 @@ class SlopeApi:
             return False
     
     def get_projection_status(self, projection_id) -> str:
-        response = self.session.get(f"{self.api_url}/Projections/{projection_id}")
+        response = self.session.get(f"{self.api_url}/Projections/{projection_id}?Fields=status")
         self.check_response(response)
         return response.json()["status"]
     
