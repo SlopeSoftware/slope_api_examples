@@ -208,7 +208,7 @@ public class SlopeApi
     private record GetProjectionStatusResponse(string status);
     public async Task<string> GetProjectionStatusAsync(int projectionId)
     { 
-        var response = await GetAsync<GetProjectionStatusResponse>($"/api/{ApiVersion}/Projections/{projectionId}");
+        var response = await GetAsync<GetProjectionStatusResponse>($"/api/{ApiVersion}/Projections/{projectionId}?Fields=status");
         return response.status;
     }
 
