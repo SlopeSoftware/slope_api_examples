@@ -40,6 +40,9 @@ var scenarioFileId = await apiClient.UploadFileAsync(scenarioTableFilePath, $"Sc
 Console.WriteLine("Uploading Inforce File");
 var modelPointFileId = await apiClient.UploadFileAsync(modelPointFilePath, $"Inforce/Inforce File - {valuationDate:yyyy-MM}.csv");
 
+/// Example - Using the GetDownloadUrl endpoint to download a file
+/// await apiClient.DownloadFileAsync($"Scenario Files/Scenarios {valuationDate:yyyy-MM}.xlsx", "scenario_file.xlsx");
+
 Console.WriteLine("Listing Table Structures");
 var tableStructures = await apiClient.ListTableStructuresAsync(modelId);
 foreach(var tableStructure in tableStructures)
