@@ -212,6 +212,19 @@ public class SlopeApi
         return response.status;
     }
 
+    public record DownloadFileRequest(string filePath, int? version = null);
+    public record DownloadFileResponse(string downloadUrl);
+    public async Task DownloadFileAsync(string slopeFilePath, string outputPath, int? version = null)
+    {
+        var request = new DownloadFileRequest(slopeFilePath, version);
+        var response = await PostAsync<DownloadFileRequest, DownloadFileResponse>(request, $"/api/{ApiVersion}/Files/GetDownloadUrl");
+
+        // Note: Do not use session here - this is a direct call to S3 and does not use the session auth
+        using var fileHttpClient = new HttpClient();
+        var data = await fileHttpClient.GetByteArrayAsync(response.downloadUrl);
+        await System.IO.File.WriteAllBytesAsync(outputPath, data);
+    }
+
     public record DownloadReportRequest(string elementId, string reportFormat, Dictionary<string, string> parameters);
     public async Task DownloadReportAsync(int projectionId, string workbookId, string elementId, string fileName, string reportFormat, Dictionary<string, string>? parameters = null)
     {
