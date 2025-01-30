@@ -8,7 +8,7 @@ import setup
 
 if __name__ == '__main__':
     # Change this to appropriate level for your run
-    setup.setup_logging(logging.DEBUG)
+    setup.setup_logging(logging.INFO)
 
     # Get List of Data Tables
     get_table_list.get_table_list()

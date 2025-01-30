@@ -54,7 +54,7 @@ class Solver:
             return None
 
         # Get the Pricing Target from the first completed run
-        initial_guess_table_id = projection_details["dataTables"][self.pricing_table_name]
+        initial_guess_table_id = [item for item in projection_details["dataTables"] if item["tableStructureName"] == self.pricing_table_name][0]["dataTableId"]
         initial_guess_table = self.api.get_data_table_by_id(initial_guess_table_id)
         prior_guess = initial_guess_table.iloc[0]['Pricing Input']
         prior_result = self.__get_result(self.projection_id)

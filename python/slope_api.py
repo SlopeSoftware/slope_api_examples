@@ -342,7 +342,7 @@ class SlopeApi:
             response = self.session.get(f"{self.api_url}/Projections/{projection_id}")
         else :
             csv_fields = ','.join(fields)
-            response = self.session.get(f"{self.api_url}/Projections/{projection_id}&fields={csv_fields}")
+            response = self.session.get(f"{self.api_url}/Projections/{projection_id}?Fields={csv_fields}")
         self.check_response(response)
         return response.json()
 
