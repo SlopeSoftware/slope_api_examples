@@ -1,5 +1,6 @@
 import threading
-import keys, slope_api
+import logging
+import keys, setup, slope_api
 
 # the following list contains sets of data to load to SLOPE with the following format
 # {
@@ -7,14 +8,15 @@ import keys, slope_api
 #   "path": tho location of the file on this computer (full path and filename)
 #   "structure": The Table Structure ID in SLOPE - https://support.slopesoftware.com/hc/en-us/articles/22875658777108-API-IDs-and-Keys
 # }
+table_structure_id = 215852
 tables = [
-    {"name": "Table A", "path": r'c:\api\TableA.csv', "structure": 215852},
-    {"name": "Table B", "path": r'c:\api\TableB.csv', "structure": 215852},
+    {"name": "Table A", "path": r'c:\api\TableA.csv', "structure": table_structure_id},
+    {"name": "Table B", "path": r'c:\api\TableB.csv', "structure": table_structure_id},
 ]
 
 
 # Single Threaded load of tables. For small batches or single table loads, this will be sufficient
-def load_tables():
+def load_data_tables():
     api_client = slope_api.SlopeApi()
     api_client.authorize(keys.api_key, keys.api_secret)
 
@@ -30,7 +32,7 @@ def load_tables():
 
 # Multi-Threaded table load. This will load multiple tables in parallel into SLOPE.
 # For large sets of tables, this is faster. Be sure to consider table size and network bandwidth.
-def load_tables_parallel():
+def load_data_tables_parallel():
     # Connect SLOPE API
     api_client = slope_api.SlopeApi()
     api_client.authorize(keys.api_key, keys.api_secret)
@@ -56,4 +58,7 @@ def load_tables_parallel():
 
 
 if __name__ == '__main__':
-    load_tables()
+    # Change this to appropriate level for your run
+    setup.setup_logging(logging.INFO)
+
+    load_data_tables()

@@ -15,8 +15,8 @@ reports = {
 
 class Solver:
     initial_guess_offset = 0.01                          # Try 1% higher than original projection as first guess
-    target_value_column = 'Pricing Metric Target Value'  # Name of the column in the Entity Parameters table tha has the target IRR
-    commission_value_column = 'Trail Commission Rate'    # Name of the column in the Trail Commission to change in order to solve for target
+    target_value_column = "Pricing Metric Target Value"  # Name of the column in the Entity Parameters table that has the target IRR
+    commission_value_column = "Trail Commission Rate"    # Name of the column in the Trail Commission to change in order to solve for target
 
     def __init__(self, params: {}):
         self.api = slope_api.SlopeApi()
@@ -37,7 +37,7 @@ class Solver:
         self.pricing_table_structure_id = pricing_table_structure["id"]
 
         # Set Display preferences for log messages
-        pd.set_option('display.max_columns', None)
+        pd.set_option("display.max_columns", None)
 
     def solve(self):
         logging.info("Starting Pricing Solver")
@@ -47,7 +47,7 @@ class Solver:
 
         # Get the completed projection details and check status
         projection_details = self.api.get_projection_details(self.projection_id)
-        if projection_details['status'] == 'NotStarted':
+        if projection_details["isRunning"] or projection_details["status"] in ["NotStarted", "ValidationFailed"]:
             logging.error("Initial projection must be run before the solver is started.")
             logging.error("Current State:")
             logging.error(projection_details)
@@ -56,7 +56,7 @@ class Solver:
         # Get the Pricing Target from the first completed run
         initial_guess_table_id = [item for item in projection_details["dataTables"] if item["tableStructureName"] == self.pricing_table_name][0]["dataTableId"]
         initial_guess_table = self.api.get_data_table_by_id(initial_guess_table_id)
-        prior_guess = initial_guess_table.iloc[0]['Pricing Input']
+        prior_guess = initial_guess_table.iloc[0]["Pricing Input"]
         prior_result = self.__get_result(self.projection_id)
         diff = abs(prior_result - self.pricing_target)
         if diff <= solver_tolerance:
@@ -88,7 +88,7 @@ class Solver:
             iterations += 1
 
         if diff > solver_tolerance:
-            logging.warning(f'Hit maximum iterations without solving. Final maximum difference of {diff}.')
+            logging.warning(f"Hit maximum iterations without solving. Final maximum difference of {diff}.")
 
         logging.info("Final Result:")
         logging.info(f"  Pricing Guess: {curr_guess}")
@@ -103,21 +103,21 @@ class Solver:
         self.api.wait_for_completion(projection_id)
         status = self.api.get_projection_status(projection_id)
         logging.debug(f"Projection completed with status of '{status}'")
-        if status not in ['Completed', 'CompletedWithErrors']:
-            logging.error(f'Projection Completed with Status of {status}. Cannot continue solver.')
+        if status not in ["Completed", "CompletedWithErrors"]:
+            logging.error(f"Projection Completed with Status of {status}. Cannot continue solver.")
             raise Exception("Projection did not complete successfully")
 
         # Get Pricing results
-        result_file_name = solver_folder + f"{self.projection_id}/{projection_id}_Pricing_Result.csv"
-        report_params = {'Projection-ID': f"{projection_id}"}
+        result_file_name = solver_folder + f"{projection_id}_Pricing_Result.csv"
+        report_params = {"Projection-ID": f"{projection_id}"}
         self.api.download_report(reports["Pricing"]["workbook"], reports["Pricing"]["element"], result_file_name, "Csv", report_params)
         pricing_data = pd.read_csv(result_file_name, header=0)
-        return pricing_data.iloc[0]['Profit Margin']
+        return pricing_data.iloc[0]["Profit Margin"]
 
     def __start_run(self, pricing_input_guess) -> int:
         # Write new Pricing Input to the table
         pricing_input_file = self.solver_folder + "pricing_guess.csv"
-        with open(pricing_input_file, 'w') as file:
+        with open(pricing_input_file, "w") as file:
             file.write("ID,Pricing Input\n")
             file.write(f",{pricing_input_guess}")
 

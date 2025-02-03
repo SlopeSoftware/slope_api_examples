@@ -327,12 +327,7 @@ class SlopeApi:
     # True - The projection is still running
     # False - The projection has completed (possibly unsuccessfully)
     def is_projection_running(self, projection_id) -> bool:
-        self.__keep_alive()
-        response = self.session.get(f"{self.api_url}/Projections/{projection_id}")
-        if response.ok:
-            return response.json()["isRunning"]
-        else:
-            return False
+        return self.get_projection_details(projection_id, ["isRunning"])["isRunning"]
 
     # Returns all of the properties set on a given Projection
     def get_projection_details(self, projection_id: int, fields: [str] = None):

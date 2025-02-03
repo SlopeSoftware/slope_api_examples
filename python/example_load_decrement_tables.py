@@ -1,5 +1,6 @@
 import threading
-import keys, slope_api
+import logging
+import keys, setup, slope_api
 
 # the following list contains sets of data to load to SLOPE with the following format
 # {
@@ -40,7 +41,6 @@ def load_decrement_tables():
 # Multi-Threaded table load. This will load multiple tables in parallel into SLOPE.
 # For large sets of tables, this is faster. Be sure to consider table size and network bandwidth.
 def load_decrement_tables_parallel():
-    # Connect SLOPE API
     api_client = slope_api.SlopeApi()
     api_client.authorize(keys.api_key, keys.api_secret)
 
@@ -69,4 +69,7 @@ def load_decrement_tables_parallel():
 
 
 if __name__ == '__main__':
+    # Change this to appropriate level for your run
+    setup.setup_logging(logging.INFO)
+
     load_decrement_tables()
