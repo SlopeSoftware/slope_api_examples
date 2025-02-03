@@ -47,7 +47,7 @@ public class SlopeApiService {
     record GetProjectionStatusResponse(String status){}
     public ProcessedRequestResult<GetProjectionStatusResponse> getProjectionStatus(int projectionId) {
          var result = webClient.get()
-                .uri("/Projections/" + projectionId)
+                .uri("/Projections/" + projectionId + "?Fields=status")
                 .exchangeToMono(RequestResult::FromClientResponse)
                  .block();
 

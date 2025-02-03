@@ -208,8 +208,21 @@ public class SlopeApi
     private record GetProjectionStatusResponse(string status);
     public async Task<string> GetProjectionStatusAsync(int projectionId)
     { 
-        var response = await GetAsync<GetProjectionStatusResponse>($"/api/{ApiVersion}/Projections/{projectionId}");
+        var response = await GetAsync<GetProjectionStatusResponse>($"/api/{ApiVersion}/Projections/{projectionId}?Fields=status");
         return response.status;
+    }
+
+    public record DownloadFileRequest(string filePath, int? version = null);
+    public record DownloadFileResponse(string downloadUrl);
+    public async Task DownloadFileAsync(string slopeFilePath, string outputPath, int? version = null)
+    {
+        var request = new DownloadFileRequest(slopeFilePath, version);
+        var response = await PostAsync<DownloadFileRequest, DownloadFileResponse>(request, $"/api/{ApiVersion}/Files/GetDownloadUrl");
+
+        // Note: Do not use session here - this is a direct call to S3 and does not use the session auth
+        using var fileHttpClient = new HttpClient();
+        var data = await fileHttpClient.GetByteArrayAsync(response.downloadUrl);
+        await System.IO.File.WriteAllBytesAsync(outputPath, data);
     }
 
     public record DownloadReportRequest(string elementId, string reportFormat, Dictionary<string, string> parameters);
