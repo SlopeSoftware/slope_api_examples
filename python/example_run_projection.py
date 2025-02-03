@@ -1,10 +1,7 @@
-import slope_api
 import datetime
 import time
-
-# Substitute Real API credentials here
-api_key = ""
-api_secret = ""
+import logging
+import keys, slope_api, setup
 
 model_id = 9999  # The ID of the model to be run
 workbook_id = "5rMaW9R0yVoehrIjyAUtew"  # The ID of the workbook with the element to download
@@ -28,15 +25,17 @@ report_download_file_path_excel = r"C:\Api\Results.xlsx"
 report_download_file_path_csv = r"C:\Api\Results.csv"
 
 
-def run():
-    api_client = slope_api.SlopeApi()
+if __name__ == '__main__':
+    # Change this to appropriate level for your run
+    setup.setup_logging(logging.INFO)
 
-    api_client.authorize(api_key, api_secret)
+    api_client = slope_api.SlopeApi()
+    api_client.authorize(keys.api_key, keys.api_secret)
 
     # Create Scenario File
     scenario_table_parameters = {
         "modelId": model_id,
-        "description": f"Scenarios {valuation_date_string}",
+        "name": f"Scenarios {valuation_date_string}",
         "startDate": valuation_date.isoformat(),
         "yieldCurveRateType": "BondEquivalent",
         "filePath": f"Scenario Files/Scenarios {valuation_date_string}.csv",
@@ -44,12 +43,11 @@ def run():
     }
     scenario_table_id = api_client.create_scenario_table(scenario_table_file_path, scenario_table_parameters)
 
-
     # Update Assumptions
     table_structures = api_client.list_table_structures(model_id)
-    print("Listing Table Structures")
+    logging.info("Listing Table Structures")
     for d in table_structures:
-        print(f"Id: {d['id']}, Name: {d['name']}, Description: {d['description']}")
+        logging.info(f"Id: {d['id']}, Name: {d['name']}, Description: {d['description']}")
 
     data_table_parameters = {
         "tableStructureId": table_structure_id,
@@ -60,12 +58,12 @@ def run():
     data_table_id = api_client.create_data_table(data_table_file_path, data_table_parameters)
 
     data_tables = api_client.list_data_tables(model_id)
-    print("Listing Data Tables")
+    logging.info("Listing Data Tables")
     for d in data_tables:
-        print(f"Id: {d['id']}, Name: {d['name']}")
+        logging.info(f"Id: {d['id']}, Name: {d['name']}")
 
     data_table_id = api_client.update_data_table(data_table_file_path, data_table_parameters)
-    
+
     # Upload New Inforce Files
     model_point_file_id = api_client.upload_file(model_point_file_path, f"Inforce/Inforce File - {valuation_date_string}.csv")
 
@@ -82,7 +80,7 @@ def run():
     api_client.update_projection_table(projection_id, data_table_name, data_table_id)
     api_client.update_projection_mpf(projection_id, model_point_portfolio_name, model_point_product_name, model_point_file_id)
 
-    # Note - Can Also Update Projection in single call:
+    # The projection can also be updated in a single call:
     #
     # projection_update_parameters = {
     #    "startDate": valuation_date.isoformat(),
@@ -105,19 +103,15 @@ def run():
 
     # Start Projection and wait for it to finish
     api_client.run_projection(projection_id)
-    print("Starting Projection")
+    logging.info("Starting Projection")
 
     while api_client.is_projection_running(projection_id):
         time.sleep(15)  # Check once every 15 seconds if it is done
 
     status = api_client.get_projection_status(projection_id)
-    print(status)
+    logging.info(f"Status: {status}")
 
     # Download Results
     if status in ["Completed", "CompletedWithErrors"]:
         api_client.download_report(workbook_id, element_id, report_download_file_path_excel, "Excel", {"Projection-ID": f"{projection_id}"})
         api_client.download_report(workbook_id, element_id, report_download_file_path_csv, "Csv", {"Projection-ID": f"{projection_id}"})
-
-
-if __name__ == "__main__":
-    run()
