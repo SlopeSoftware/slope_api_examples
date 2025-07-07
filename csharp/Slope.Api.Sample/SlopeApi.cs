@@ -62,10 +62,21 @@ public class SlopeApi
         return saveResponse.fileId;
     }
     
-    public record ListTableStructuresResponse(int id, string name, string description);
-    public async Task<ICollection<ListTableStructuresResponse>> ListTableStructuresAsync(int modelId)
+    public record TableStructureItem(int id, string? name, string? description);
+    public record TableStructuresPaginatedResponse(List<TableStructureItem>? items, int? offset);
+    public async Task<ICollection<TableStructureItem>> ListTableStructuresAsync(int modelId)
     {
-        return await GetAsync<ICollection<ListTableStructuresResponse>>($"/api/{ApiVersion}/TableStructures/List/{modelId}");
+        var allItems = new List<TableStructureItem>();
+        int? offset = 0;
+        do
+        {
+            var url = $"/api/{ApiVersion}/Models/{modelId}/TableStructures?Limit=200" + (offset > 0 ? $"&Offset={offset}" : "");
+            var response = await GetAsync<TableStructuresPaginatedResponse>(url);
+            if (response.items != null)
+                allItems.AddRange(response.items);
+            offset = response.offset;
+        } while (offset != null);
+        return allItems;
     }
 
     private record CreateDataTableRequest(int tableStructureId,
@@ -109,11 +120,22 @@ public class SlopeApi
         var response = await PatchAsync<UpdateDataTableRequest, UpdateDataTableResponse>(request, $"/api/{ApiVersion}/DataTables");
         return response.id;
     }
-
-    public record ListDataTablesResponse(int id, string name);
-    public async Task<ICollection<ListDataTablesResponse>> ListDataTablesAsync(int modelId)
+    
+    public record DataTableItem(int id, string? name, int? tableStructureId, string? tableStructureName, int version, bool isLatestVersion);
+    public record DataTablesPaginatedResponse(List<DataTableItem>? items, int? offset);
+    public async Task<ICollection<DataTableItem>> ListDataTablesAsync(int modelId)
     {
-        return await GetAsync<ICollection<ListDataTablesResponse>>($"/api/{ApiVersion}/DataTables/List/{modelId}");
+        var allItems = new List<DataTableItem>();
+        int? offset = 0;
+        do
+        {
+            var url = $"/api/{ApiVersion}/Models/{modelId}/DataTables?Limit=200" + (offset > 0 ? $"&Offset={offset}" : "");
+            var response = await GetAsync<DataTablesPaginatedResponse>(url);
+            if (response.items != null)
+                allItems.AddRange(response.items);
+            offset = response.offset;
+        } while (offset != null);
+        return allItems;
     }
 
     private record CreateScenarioTableRequest(int modelId,
@@ -225,23 +247,70 @@ public class SlopeApi
         await System.IO.File.WriteAllBytesAsync(outputPath, data);
     }
 
-    public record DownloadReportRequest(string elementId, string reportFormat, Dictionary<string, string> parameters);
-    public async Task DownloadReportAsync(int projectionId, string workbookId, string elementId, string fileName, string reportFormat, Dictionary<string, string>? parameters = null)
+    public async Task DownloadReportAsync(int projectionId, string workbookId, string elementId, string fileName, string reportFormat, Dictionary<string, string> parameters, TimeSpan? timeout = null)
     {
         var finalParameters = new Dictionary<string, string>(parameters ?? new Dictionary<string, string>());
-        finalParameters.TryAdd("Projection-ID", projectionId.ToString());
-        
-        var request = new DownloadReportRequest(elementId, reportFormat, finalParameters);
+        finalParameters["Projection-ID"] = projectionId.ToString();
+
+        var request = new
+        {
+            elementId = elementId,
+            reportFormat = reportFormat,
+            parameters = finalParameters
+        };
         var content = new StringContent(JsonSerializer.Serialize(request), Encoding.UTF8, "application/json");
-        var response = await _httpClient.PostAsync($"/api/{ApiVersion}/Reports/Workbooks/{workbookId}", content);
+        var response = await _httpClient.PostAsync($"/api/{ApiVersion}/Reports/Workbooks/{workbookId}/Generate", content);
         await CheckResponseAsync(response);
 
-        await using (var file = File.OpenWrite(fileName))
-        await using (var report = await response.Content.ReadAsStreamAsync())
+        var responseJson = await response.Content.ReadAsStringAsync();
+        var generation = JsonSerializer.Deserialize<GenerateWorkbookReportResponse>(responseJson);
+        if (generation == null || string.IsNullOrEmpty(generation.generationId))
         {
-            await report.CopyToAsync(file);
+            throw new Exception("Failed to start report generation");
         }
+
+        string? downloadUrl = null;
+        string statusUrl = $"/api/{ApiVersion}/Reports/Workbooks/Status/{generation.generationId}";
+        var statusTimeout = timeout ?? TimeSpan.FromMinutes(15);
+        var startTime = DateTime.UtcNow;
+        while (true)
+        {
+            var statusResponse = await _httpClient.GetAsync(statusUrl);
+            await CheckResponseAsync(statusResponse);
+
+            var statusJson = await statusResponse.Content.ReadAsStringAsync();
+            var status = JsonSerializer.Deserialize<GetWorkbookReportGenerationStatusResponse>(statusJson) ?? throw new Exception("Failed to get report status");
+            if (status.status == "Completed")
+            {
+                downloadUrl = status.downloadUrl;
+                break;
+            }
+            
+            if (status.status == "Failed")
+            {
+                throw new Exception($"Report generation failed: {status.message}");
+            }
+
+            if (DateTime.UtcNow - startTime > statusTimeout)
+            {
+                throw new TimeoutException("Timed out waiting for report generation to complete");
+            }
+
+            await Task.Delay(5000);
+        }
+
+        if (string.IsNullOrEmpty(downloadUrl))
+        {
+            throw new Exception("No download URL returned");
+        }
+
+        using var fileHttpClient = new HttpClient();
+        var data = await fileHttpClient.GetByteArrayAsync(downloadUrl);
+        await File.WriteAllBytesAsync(fileName, data);
     }
+
+    private record GenerateWorkbookReportResponse(string? generationId, string? reportStatusUrl);
+    private record GetWorkbookReportGenerationStatusResponse(string status, string? downloadUrl, string? message);
 
     private async Task CheckResponseAsync(HttpResponseMessage response)
     {

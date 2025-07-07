@@ -176,24 +176,67 @@ public class SlopeApiService {
     
     record ListTableStructureResponse(int id, String name, String descritpion){}
     public List<ListTableStructureResponse> listTableStructures(int modelId) {
-        Mono<List<ListTableStructureResponse>> response = webClient.get()
-            .uri("/TableStructures/List/" + modelId)
-            .accept(MediaType.APPLICATION_JSON)
-            .retrieve()
-            .bodyToMono(new ParameterizedTypeReference<>() {});
+        int offset = 0;
+        int limit = 200;
+        List<ListTableStructureResponse> allItems = new java.util.ArrayList<>();
+        while (true) {
+            var response = webClient.get()
+                .uri("/Models/" + modelId + "/TableStructures?Limit=" + limit + (offset > 0 ? "&Offset=" + offset : ""))
+                .accept(MediaType.APPLICATION_JSON)
+                .retrieve()
+                .bodyToMono(new ParameterizedTypeReference<Map<String, Object>>() {})
+                .block();
 
-        return response.block();
+            if (response == null || !response.containsKey("items")) {
+                break;
+            }
+            var items = (List<Map<String, Object>>) response.get("items");
+            for (var item : items) {
+                allItems.add(new ListTableStructureResponse(
+                    ((Number) item.get("id")).intValue(),
+                    (String) item.get("name"),
+                    (String) item.get("description")
+                ));
+            }
+            Object nextOffset = response.get("offset");
+            if (nextOffset == null) {
+                break;
+            }
+            offset = ((Number) nextOffset).intValue();
+        }
+        return allItems;
     }
 
     record ListDataTablesResponse(int id, String name){}
     public List<ListDataTablesResponse> listDataTables(int modelId) {
-        Mono<List<ListDataTablesResponse>> response = webClient.get()
-          .uri("/DataTables/List/" + modelId)
-          .accept(MediaType.APPLICATION_JSON)
-          .retrieve()
-          .bodyToMono(new ParameterizedTypeReference<>() {});
+        int offset = 0;
+        int limit = 200;
+        List<ListDataTablesResponse> allItems = new java.util.ArrayList<>();
+        while (true) {
+            var response = webClient.get()
+                .uri("/Models/" + modelId + "/DataTables?Limit=" + limit + (offset > 0 ? "&Offset=" + offset : ""))
+                .accept(MediaType.APPLICATION_JSON)
+                .retrieve()
+                .bodyToMono(new ParameterizedTypeReference<Map<String, Object>>() {})
+                .block();
 
-        return response.block();
+            if (response == null || !response.containsKey("items")) {
+                break;
+            }
+            var items = (List<Map<String, Object>>) response.get("items");
+            for (var item : items) {
+                allItems.add(new ListDataTablesResponse(
+                    ((Number) item.get("id")).intValue(),
+                    (String) item.get("name")
+                ));
+            }
+            Object nextOffset = response.get("offset");
+            if (nextOffset == null) {
+                break;
+            }
+            offset = ((Number) nextOffset).intValue();
+        }
+        return allItems;
     }
 
     record CreateScenarioTableRequest(int modelId, String description, String startDate, String yieldCurveRateType, String filePath, String delimiter){}
@@ -336,5 +379,78 @@ public class SlopeApiService {
         }
 
         return new ProcessedRequestBinaryResult<>(result, result.data());
+    }
+
+    public ProcessedRequestBinaryResult<byte[]> downloadReport(String workbookId, String elementId, String reportFormat, Map<String, String> parameters, java.time.Duration timeout) {
+        var finalParameters = new java.util.HashMap<>(parameters != null ? parameters : Map.of());
+        var request = Map.of(
+            "elementId", elementId,
+            "reportFormat", reportFormat,
+            "parameters", finalParameters
+        );
+        var response = webClient.post()
+            .uri("/Reports/Workbooks/" + workbookId + "/Generate")
+            .body(Mono.just(request), Map.class)
+            .exchangeToMono(RequestResult::FromClientResponse)
+            .block();
+
+        if (response == null || response.hasError() || !response.parsedJsonResponse().containsKey("generationId")) {
+            throw new RuntimeException("Failed to start report generation");
+        }
+
+        String downloadUrl = null;
+        String generationId = String.valueOf(response.parsedJsonResponse().get("generationId"));
+        String statusUrl = "/Reports/Workbooks/Status/" + generationId;
+        java.time.Instant start = java.time.Instant.now();
+        java.time.Duration statusTimeout = timeout != null ? timeout : java.time.Duration.ofMinutes(15);
+        
+        while (true) {
+            var statusResponse = webClient.get()
+                .uri(statusUrl)
+                .exchangeToMono(RequestResult::FromClientResponse)
+                .block();
+
+            if (statusResponse == null || statusResponse.hasError() || statusResponse.parsedJsonResponse() == null) {
+                throw new RuntimeException("Failed to get report status");
+            }
+
+            String status = String.valueOf(statusResponse.parsedJsonResponse().get("status"));
+            if ("Completed".equals(status)) {
+                downloadUrl = (String) statusResponse.parsedJsonResponse().get("downloadUrl");
+                break;
+            }
+
+            if ("Failed".equals(status)) {
+                throw new RuntimeException("Report generation failed: " + statusResponse.parsedJsonResponse().get("message"));
+            }
+
+            if (java.time.Duration.between(start, java.time.Instant.now()).compareTo(statusTimeout) > 0) {
+                throw new RuntimeException("Timed out waiting for report generation to complete");
+            }
+
+            try {
+                Thread.sleep(5000);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        if (downloadUrl == null || downloadUrl.isEmpty()) {
+            throw new RuntimeException("No download URL returned");
+        }
+
+        // Notes - Since this is a direct call to S3 a separate HTTP client is used.
+        var data = HttpClient.create().get()
+            .uri(downloadUrl)
+            .responseContent()
+            .aggregate()
+            .asByteArray()
+            .block();
+        
+        if (data == null) {
+            throw new RuntimeException("Failed to download report file");
+        }
+        
+        return new ProcessedRequestBinaryResult<>(new RequestBinaryResult(false, null, null), data);
     }
 }
