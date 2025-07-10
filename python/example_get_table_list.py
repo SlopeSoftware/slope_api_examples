@@ -19,7 +19,7 @@ if __name__ == '__main__':
     tables = api.list_data_tables_by_structure_id(table_structure_id)
 
     # Get a List of all Data Tables where Table Structure Name =  on a Model
-    tables = api.list_data_tables_by_structure_name(model_id, table_structure_name)
+    tables = api.list_data_tables(model_id, table_structure_name)
 
     # Get a List of all Decrement Tables on a Model
     tables = api.list_decrement_tables(model_id)

@@ -95,7 +95,7 @@ public class SlopeApiApplication implements CommandLineRunner {
         if (status.contains("Completed")) {
             try {
                 Files.write(Path.of(Parameters.ReportDownloadFilePathExcel),
-                        api.downloadReport(Parameters.WorkbookId, Parameters.ElementId, ReportFormatType.Excel, Map.of("Projection-ID", String.valueOf(projectionId))).payload(),
+                        api.downloadReport(Parameters.WorkbookId, Parameters.ElementId, ReportFormatType.Excel, Map.of("Projection-ID", String.valueOf(projectionId)), java.time.Duration.ofMinutes(15)).payload(),
                         StandardOpenOption.CREATE);
             } catch (IOException e) {
                 LOG.info("Failed to save Excel report");
@@ -103,7 +103,7 @@ public class SlopeApiApplication implements CommandLineRunner {
 
             try {
                 Files.write(Path.of(Parameters.ReportDownloadFilePathCsv),
-                        api.downloadReport(Parameters.WorkbookId, Parameters.ElementId, ReportFormatType.Csv, Map.of("Projection-ID", String.valueOf(projectionId))).payload(),
+                        api.downloadReport(Parameters.WorkbookId, Parameters.ElementId, ReportFormatType.Csv, Map.of("Projection-ID", String.valueOf(projectionId)), java.time.Duration.ofMinutes(15)).payload(),
                         StandardOpenOption.CREATE);
             } catch (IOException e) {
                 LOG.info("Failed to save CSV report");
