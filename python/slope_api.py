@@ -394,16 +394,13 @@ class SlopeApi:
             logging.info(f"Waiting for Projection ID {projection_id} to finish. Current status: {status}")
             time.sleep(15)  # Check once every 15 seconds if it is done
 
-    def generate_workbook_report(self, workbook_id: str, element_id: str = None, 
-                                report_format: str = "Csv", parameters: dict = None, 
-                                row_limit: int = None, offset: int = None) -> dict:
+    def generate_workbook_report(self, workbook_id: str, element_id: str, format_type: str, parameters: dict, row_limit: int = None, offset: int = None) -> dict:
         """Start a workbook report generation."""
         self.__keep_alive()
         report_params = {
-            "reportFormat": report_format,
+            "reportFormat": format_type,
+            "elementId": element_id,
         }
-        if element_id:
-            report_params["elementId"] = element_id
         if parameters:
             report_params["parameters"] = parameters
         if row_limit:
@@ -423,7 +420,7 @@ class SlopeApi:
         self.check_response(response)
         return response.json()
     
-    def download_report(self, workbook_id: int, element_id: int, filename: str, format_type: str, parameters: dict, row_limit=None, offset=None, timeout=900):
+    def download_report(self, workbook_id: str, element_id: str, filename: str, format_type: str, parameters: dict, row_limit=None, offset=None, timeout=900):
         """Start a workbook report generation and poll for completion. Once complete, download the file."""
         self.__keep_alive()
         report_response = self.generate_workbook_report(
