@@ -426,7 +426,7 @@ class SlopeApi:
         report_response = self.generate_workbook_report(
             workbook_id=workbook_id,
             element_id=element_id,
-            report_format=format_type,
+            format_type=format_type,
             parameters=parameters,
             row_limit=row_limit,
             offset=offset
